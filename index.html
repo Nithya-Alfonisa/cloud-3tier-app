@@ -7,61 +7,121 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-            background-color: #f4f7f6;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 40px 20px;
+            color: #333;
         }
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: auto;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-        h1 { color: #333; }
-        #status-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 1.2em;
+        h1 { color: #1e293b; margin-bottom: 5px; font-size: 2rem; }
+        .subtitle { color: #64748b; margin-bottom: 30px; font-size: 1rem; }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
         }
-        .loading { color: #0056b3; background-color: #e7f3ff; }
-        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .loading { color: #0284c7; background-color: #e0f2fe; }
+        .success { color: #16a34a; background-color: #dcfce7; }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #1d4ed8; }
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+            display: none;
+        }
+        .result-title { font-weight: bold; color: #1e293b; margin-bottom: 8px; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Multi-Tier Cloud Application Showcase</h1>
-        <div id="status-box" class="loading">Connecting to Cloud Backend...</div>
-        <div id="backend-message" style="margin-top: 15px; color: #555;"></div>
+        <h1>Multi-Tier Cloud Integration Showcase</h1>
+        <div class="subtitle">Presentation Tier (GitHub Pages CDN) ⇄ Application Tier (FastAPI Engine)</div>
+        
+        <div id="status-box" class="status-badge loading">Pinging Application Infrastructure...</div>
+
+        <textarea id="text-input" placeholder="Enter a long paragraph or essay here to pass across the multi-tier cloud loop..."></textarea>
+        <br>
+        <button onclick="processCloudData()">Trigger Cloud Compute</button>
+
+        <div id="result-wrapper" class="result-box">
+            <div class="result-title">⚡ Computed Response Payload:</div>
+            <div id="summary-content"></div>
+        </div>
     </div>
 
     <script>
-        async function connectToBackend() {
-            const statusBox = document.getElementById('status-box');
-            const messageBox = document.getElementById('backend-message');
-            
+        const host = 'http://127.0.0.1:8000';
+
+        async function checkConnection() {
             try {
-                // Fetching from your active local FastAPI port
-                const response = await fetch('http://127.0.0.1:8000/');
-                if (!response.ok) throw new Error('Network response error');
-                
-                const data = await response.json();
-                
-                // Update UI when connection succeeds
-                statusBox.className = 'success';
-                statusBox.innerText = `Status: ${data.status} (Tier: ${data.tier})`;
-                messageBox.innerText = data.message;
-            } catch (error) {
-                console.error('Fetch error:', error);
-                statusBox.innerText = "Connecting to Cloud Backend...";
+                const response = await fetch(`${host}/`);
+                if(response.ok) {
+                    const statusBox = document.getElementById('status-box');
+                    statusBox.className = 'status-badge success';
+                    statusBox.innerText = 'Infrastructure Link: Connected Active';
+                }
+            } catch (err) {
+                console.error("Infrastructure ping failed.");
             }
         }
 
-        // Run connection script on load
-        window.onload = connectToBackend;
+        async function processCloudData() {
+            const text = document.getElementById('text-input').value;
+            const resultWrapper = document.getElementById('result-wrapper');
+            const summaryContent = document.getElementById('summary-content');
+
+            try {
+                const response = await fetch(`${host}/api/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                const data = await response.json();
+                resultWrapper.style.display = 'block';
+                summaryContent.innerHTML = `<strong>Summary:</strong> ${data.summary} <br><br><small style="color:#94a3b8">Execution Runtime: ${data.execution_tier} | Calculated Words: ${data.original_word_count}</small>`;
+            } catch (error) {
+                alert("Failed to compute. Verify your local python app.py is actively running on port 8000.");
+            }
+        }
+
+        window.onload = checkConnection;
     </script>
 </body>
 </html>
