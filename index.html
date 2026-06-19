@@ -2,10 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Architecture Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Tier Cloud Application Showcase</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            background-color: #f4f7f6;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        #status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .loading { color: #0056b3; background-color: #e7f3ff; }
+        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-    <h2>Multi-Tier Cloud Application Showcase</h2>
-    <div id="status" style="color: blue; font-weight: bold; font-size: 24px;">Connecting to Cloud Backend...</div>
+<body>
+    <div class="container">
+        <h1>Multi-Tier Cloud Application Showcase</h1>
+        <div id="status-box" class="loading">Connecting to Cloud Backend...</div>
+        <div id="backend-message" style="margin-top: 15px; color: #555;"></div>
+    </div>
+
+    <script>
+        async function connectToBackend() {
+            const statusBox = document.getElementById('status-box');
+            const messageBox = document.getElementById('backend-message');
+            
+            try {
+                // Fetching from your active local FastAPI port
+                const response = await fetch('http://127.0.0.1:8000/');
+                if (!response.ok) throw new Error('Network response error');
+                
+                const data = await response.json();
+                
+                // Update UI when connection succeeds
+                statusBox.className = 'success';
+                statusBox.innerText = `Status: ${data.status} (Tier: ${data.tier})`;
+                messageBox.innerText = data.message;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                statusBox.innerText = "Connecting to Cloud Backend...";
+            }
+        }
+
+        // Run connection script on load
+        window.onload = connectToBackend;
+    </script>
 </body>
 </html>
